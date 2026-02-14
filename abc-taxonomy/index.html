@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ABC Taxonomy for Agent Use Cases</title>
+  <title>The Lattice of Delegated Agency</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -232,7 +232,7 @@
       };
 
       const getLineWidth = (from, to) => {
-        if (selectedId === from || selectedId === to) return 1;
+        if (selectedId === from || selectedId === to) return 0.75;
         return 0.5;
       };
 
@@ -256,16 +256,32 @@
                    </span>
                  </div>
 
-                 <h1 className="text-4xl md:text-5xl 3xl:text-3xl font-black tracking-tight text-slate-900 mb-4 leading-tight">
-                   The <span className="text-indigo-600">ABC Taxonomy</span> for Agent Use Cases
-                 </h1>
+                 <div className="space-y-4">
+                   <h1 className="text-3xl font-bold text-slate-900">The Lattice of <span className="text-indigo-600">Delegated Agency</span></h1>
 
-                 <p className="text-slate-600 text-sm md:text-base leading-relaxed mb-4 max-w-2xl">
-                   A pragmatic 3-dimensional lattice for classifying AI utility. We replace vague buzzwords with three binary toggles: <strong className="text-amber-600 font-semibold">Autonomy</strong> (Can it act?), <strong className="text-blue-600 font-semibold">Breadth</strong> (Is it a generalist?), and <strong className="text-emerald-600 font-semibold">Correctness</strong> (Is failure expensive?).
-                 </p>
-                 <p className="text-xs text-slate-400 font-medium">
-                   Use the lattice below to map the "Value Gap" between technical capability and business risk.
-                 </p>
+                   <p className="text-slate-600 text-sm md:text-base leading-relaxed max-w-2xl">
+                     This framework maps the precise boundary between human responsibility and machine capability.
+                     It classifies AI use cases not by "intelligence," but by the <strong>transfer of risk</strong> across three dimensions of delegation:
+                   </p>
+
+                   <ul className="text-slate-600 text-sm md:text-base leading-relaxed list-disc list-outside ml-5 space-y-1">
+                     <li>
+                       <strong className="text-amber-600 font-semibold">Autonomy (Delegated Execution):</strong>{' '}
+                       Does the agent act on the world, or merely suggest?{' '}
+                       <span className="text-slate-400 text-xs uppercase tracking-wide">(Human Actor vs. Machine Actor)</span>
+                     </li>
+                     <li>
+                       <strong className="text-blue-600 font-semibold">Breadth (Delegated Context):</strong>{' '}
+                       Does the agent attempt to cover a wide, open-ended scope, or a narrow, closed domain?{' '}
+                       <span className="text-slate-400 text-xs uppercase tracking-wide">(Specialist vs. Generalist)</span>
+                     </li>
+                     <li>
+                       <strong className="text-emerald-600 font-semibold">Correctness (Delegated Verification):</strong>{' '}
+                       Is the output probabilistic (requiring human review) or deterministic (reliable enough to trust)?{' '}
+                       <span className="text-slate-400 text-xs uppercase tracking-wide">(Creative vs. Critical)</span>
+                     </li>
+                   </ul>
+                 </div>
               </div>
             </div>
           </div>
@@ -351,10 +367,21 @@
                                x={node.x}
                                y={node.y + 7}
                                textAnchor="middle"
-                               className={`text-[3.6px] font-bold tracking-tight transition-colors duration-300 ${isActive ? 'fill-black font-extrabold' : 'fill-slate-400'}`}
+                               className={`text-[3.6px] font-bold tracking-tight transition-colors duration-300 ${isActive ? 'fill-indigo-700 font-extrabold' : 'fill-slate-400'}`}
+                               style={isActive ? { stroke: 'white', strokeWidth: 0.8, paintOrder: 'stroke' } : {}}
                              >
                                {node.label}
                              </text>
+
+                             {/* Dimension indicators */}
+                             {isActive && (
+                               <g>
+                                 <rect x={node.x - 6} y={node.y + 9.5} width="12" height="5" rx="1.5" className="fill-white" />
+                                 <circle cx={node.x - 3} cy={node.y + 12} r="1.2" className={node.dimensions.A ? 'fill-amber-500' : 'fill-slate-300'} />
+                                 <circle cx={node.x} cy={node.y + 12} r="1.2" className={node.dimensions.B ? 'fill-blue-500' : 'fill-slate-300'} />
+                                 <circle cx={node.x + 3} cy={node.y + 12} r="1.2" className={node.dimensions.C ? 'fill-emerald-500' : 'fill-slate-300'} />
+                               </g>
+                             )}
                            </g>
                          );
                       })}
@@ -446,12 +473,6 @@
                 </div>
               </div>
 
-              <div className="p-6 mt-4 bg-slate-50 border-t border-slate-100 text-center">
-                 <p className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mb-1">Interactive Guide</p>
-                 <p className="text-xs text-slate-500 flex items-center justify-center gap-1">
-                   Select adjacent nodes to analyze the "Value Gap" <IconComponent name="arrow-right" size={12} />
-                 </p>
-              </div>
 
             </div>
           </main>
