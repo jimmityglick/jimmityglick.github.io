@@ -198,7 +198,7 @@
       const ZOOM_MAX = 2.2;
 
       const colorMapBinary = {
-        "000": "#000000",
+        "000": "0",
         "100": "#ff1a1a",
         "010": "#00d26a",
         "001": "#2a6bff",
@@ -209,7 +209,7 @@
       };
 
       const labelMapBinary = {
-        "000": "8",
+        "000": "-",
         "100": "R",
         "010": "G",
         "001": "B",
@@ -655,7 +655,7 @@
               const strokeWidth = (isBlackNode ? 3 : (isBinary ? 2 : 1)) * zoom;
               const opacity = isBinary ? (0.75 + 0.25 * depthBoost) * 0.8 : (0.55 + 0.45 * depthBoost) * 0.7;
 
-              const gEl = createSVGElement("g", { opacity: String(opacity) });
+                const gEl = createSVGElement("g", { opacity: String(opacity) });
               const c = createSVGElement("circle", {
                 cx: x,
                 cy: y,
@@ -674,8 +674,8 @@
                     {
                       x,
                       y,
-                      textAnchor: "middle",
-                      dominantBaseline: "middle",
+                      "text-anchor": "middle",
+                      "dominant-baseline": "middle",
                       fontSize: String(14 * zoom),
                       fontWeight: "800",
                       fill: textColorForFill(fill),
