@@ -510,6 +510,7 @@
         let dragging = false;
         const dragState = { active: false, lastX: 0, lastY: 0, startX: 0, startY: 0, pointerId: null };
         const activeBalls = [];
+        let ballCounter = 0;
 
         function setRotation(next) {
           if (typeof next.psi === "number") psi = next.psi;
@@ -618,6 +619,12 @@
             originM[2] + hit.end * dirM[2],
           ];
 
+          const lineVel = [
+            endP[0] - startP[0],
+            endP[1] - startP[1],
+            endP[2] - startP[2],
+          ];
+
           const axisDir = normalize(dirM);
           let up = [0, 1, 0];
           if (Math.abs(axisDir[1]) > 0.99) up = [1, 0, 0];
@@ -629,11 +636,14 @@
             id: Math.random().toString(36).slice(2),
             startP,
             endP,
+            lineVel,
             uBasis,
             vBasis,
+            spinDirection: (ballCounter % 2 === 0 ? 1 : -1),
             startTime: performance.now(),
             exitLatched: false,
           });
+          ballCounter += 1;
         }
 
         function updateBalls(now) {
@@ -765,11 +775,7 @@
               if (tProg < 0) continue;
 
               if (tProg > 1 && !b.exitLatched) {
-                const mVel = [
-                  (b.endP[0] - b.startP[0]) - 0.45 * Math.PI * b.uBasis[0],
-                  (b.endP[1] - b.startP[1]) - 0.45 * Math.PI * b.uBasis[1],
-                  (b.endP[2] - b.startP[2]) - 0.45 * Math.PI * b.uBasis[2],
-                ];
+                const mVel = b.lineVel;
 
                 let posRot = rotateZ(b.endP, psi);
                 posRot = rotateY(posRot, theta);
@@ -800,7 +806,7 @@
                   const linearZ = b.startP[2] + (b.endP[2] - b.startP[2]) * t;
 
                   const spiralRadius = 0.45 * Math.sin(Math.PI * t);
-                  const angle = 4 * 2 * Math.PI * t;
+                  const angle = 4 * 2 * Math.PI * t * b.spinDirection;
                   const uOffset = spiralRadius * Math.cos(angle);
                   const vOffset = spiralRadius * Math.sin(angle);
 
