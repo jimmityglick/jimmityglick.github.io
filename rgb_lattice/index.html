@@ -25,14 +25,15 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: stretch;
       gap: 20px;
       padding: 24px 12px;
     }
 
     .panel-wrap {
       position: relative;
-      width: min(650px, calc(100vw - 24px));
+      width: 100%;
+      min-width: 650px;
       aspect-ratio: 1 / 1;
       border-radius: 18px;
       overflow: hidden;
@@ -124,9 +125,65 @@
 
     .footer-note {
       text-align: center;
-      max-width: min(650px, calc(100vw - 24px));
+      max-width: 100%;
+      width: 100%;
       color: #d4dae6;
       font-size: 14px;
+    }
+
+    .intro {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      color: #e2e8f0;
+      max-width: 748px;
+      margin: 0 auto;
+      padding: 50px;
+    }
+
+    .intro h1 {
+      margin: 0;
+      font-size: 2rem;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+
+    .intro p {
+      margin: 0;
+      line-height: 1.5;
+      color: #cbd5e1;
+    }
+
+    .diagrams-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    @media (min-width: 1200px) {
+      .page {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+        column-gap: 24px;
+      }
+
+      .intro {
+        grid-column: 1;
+        max-width: none;
+      }
+
+      .diagrams-column {
+        grid-column: 2;
+        width: 100%;
+        align-items: stretch;
+      }
+
+      .footer-note {
+        grid-column: 1 / -1;
+      }
     }
 
     @media (max-width: 680px) {
@@ -143,48 +200,57 @@
 </head>
 <body>
   <main class="page">
-    <section class="panel-wrap" id="binaryPanel">
-      <svg id="binarySvg" class="lattice-svg"></svg>
-      <aside class="panel-controls">
-        <div>
-          <p>Auto-Rotate</p>
-          <div class="button-row">
-            <button id="binary-toggle-x" class="control-btn" data-type="axis">X</button>
-            <button id="binary-toggle-y" class="control-btn active" data-type="axis">Y</button>
-            <button id="binary-toggle-z" class="control-btn" data-type="axis">Z</button>
-          </div>
-        </div>
-        <div>
-          <p>Visibility</p>
-          <div class="button-row">
-            <button id="binary-toggle-nodes" class="control-btn visible" data-type="visibility">Nodes</button>
-            <button id="binary-toggle-edges" class="control-btn visible" data-type="visibility">Edges</button>
-          </div>
-        </div>
-        <button id="binary-reset" class="reset-btn">Reset View</button>
-      </aside>
+    <section class="intro">
+      <h1>RGB Lattice</h1>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae sapien sed erat dictum fermentum a non dui. Nulla facilisi. Vestibulum posuere mi sed odio dignissim, nec laoreet elit tincidunt.</p>
+      <p>Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Cras vel erat sed nisi luctus tincidunt. Phasellus in dui sed neque tincidunt posuere at et erat. Sed a lorem consequat, feugiat risus vel, porttitor justo.</p>
+      <p>In hac habitasse platea dictumst. Donec malesuada, nisl sed condimentum dictum, augue ex luctus mauris, eu tincidunt nibh nibh a erat. Aliquam erat volutpat. Nam tincidunt enim eget arcu dictum, eu tempor nibh laoreet.</p>
     </section>
 
-    <section class="panel-wrap" id="ternaryPanel">
-      <svg id="ternarySvg" class="lattice-svg"></svg>
-      <aside class="panel-controls">
-        <div>
-          <p>Auto-Rotate</p>
-          <div class="button-row">
-            <button id="ternary-toggle-x" class="control-btn" data-type="axis">X</button>
-            <button id="ternary-toggle-y" class="control-btn active" data-type="axis">Y</button>
-            <button id="ternary-toggle-z" class="control-btn" data-type="axis">Z</button>
+    <section class="diagrams-column">
+      <section class="panel-wrap" id="binaryPanel">
+        <svg id="binarySvg" class="lattice-svg"></svg>
+        <aside class="panel-controls">
+          <div>
+            <p>Auto-Rotate</p>
+            <div class="button-row">
+              <button id="binary-toggle-x" class="control-btn" data-type="axis">X</button>
+              <button id="binary-toggle-y" class="control-btn active" data-type="axis">Y</button>
+              <button id="binary-toggle-z" class="control-btn" data-type="axis">Z</button>
+            </div>
           </div>
-        </div>
-        <div>
-          <p>Visibility</p>
-          <div class="button-row">
-            <button id="ternary-toggle-nodes" class="control-btn visible" data-type="visibility">Nodes</button>
-            <button id="ternary-toggle-edges" class="control-btn visible" data-type="visibility">Edges</button>
+          <div>
+            <p>Visibility</p>
+            <div class="button-row">
+              <button id="binary-toggle-nodes" class="control-btn visible" data-type="visibility">Nodes</button>
+              <button id="binary-toggle-edges" class="control-btn visible" data-type="visibility">Edges</button>
+            </div>
           </div>
-        </div>
-        <button id="ternary-reset" class="reset-btn">Reset View</button>
-      </aside>
+          <button id="binary-reset" class="reset-btn">Reset View</button>
+        </aside>
+      </section>
+
+      <section class="panel-wrap" id="ternaryPanel">
+        <svg id="ternarySvg" class="lattice-svg"></svg>
+        <aside class="panel-controls">
+          <div>
+            <p>Auto-Rotate</p>
+            <div class="button-row">
+              <button id="ternary-toggle-x" class="control-btn" data-type="axis">X</button>
+              <button id="ternary-toggle-y" class="control-btn active" data-type="axis">Y</button>
+              <button id="ternary-toggle-z" class="control-btn" data-type="axis">Z</button>
+            </div>
+          </div>
+          <div>
+            <p>Visibility</p>
+            <div class="button-row">
+              <button id="ternary-toggle-nodes" class="control-btn visible" data-type="visibility">Nodes</button>
+              <button id="ternary-toggle-edges" class="control-btn visible" data-type="visibility">Edges</button>
+            </div>
+          </div>
+          <button id="ternary-reset" class="reset-btn">Reset View</button>
+        </aside>
+      </section>
     </section>
 
     <p class="footer-note">Lattices rendered in pure SVG with no React/build tooling.</p>
@@ -209,7 +275,7 @@
       };
 
       const labelMapBinary = {
-        "000": "-",
+        "000": "∅",
         "100": "R",
         "010": "G",
         "001": "B",
@@ -654,6 +720,7 @@
               const radius = isBinary ? 30 * zoom : (n.r % 1 === 0 && n.g % 1 === 0 && n.b % 1 === 0 ? 18 * zoom : 9 * zoom);
               const strokeWidth = (isBlackNode ? 3 : (isBinary ? 2 : 1)) * zoom;
               const opacity = isBinary ? (0.75 + 0.25 * depthBoost) * 0.8 : (0.55 + 0.45 * depthBoost) * 0.7;
+              const labelSize = 12 + 16 * ((clamp(zoom, ZOOM_MIN, ZOOM_MAX) - ZOOM_MIN) / (ZOOM_MAX - ZOOM_MIN));
 
                 const gEl = createSVGElement("g", { opacity: String(opacity) });
               const c = createSVGElement("circle", {
@@ -676,7 +743,7 @@
                       y,
                       "text-anchor": "middle",
                       "dominant-baseline": "middle",
-                      fontSize: String(14 * zoom),
+                      "font-size": String(labelSize),
                       fontWeight: "800",
                       fill: textColorForFill(fill),
                     },
@@ -767,10 +834,11 @@
                 }
 
                 const [sx, sy] = projectIso(pRot, w, h, zoom);
-                const depthScale = 0.1 + 2.4 * clamp(centerDepth, -0.5, 1);
+                const depthScale = Math.max(0, 0.1 + 2.4 * clamp(centerDepth, -0.5, 1));
                 const isMain = i === 0;
-                const radius = 10 * depthScale * zoom;
+                const radius = Math.max(0, 10 * depthScale * zoom);
                 const opacity = isMain ? 1 : 0.65 * (1 - i / NUM_ECHOS);
+                const strokeWidth = Math.max(0, 1.5 * depthScale * zoom);
 
                 trail.push(
                   createSVGElement("circle", {
@@ -780,7 +848,7 @@
                     fill,
                     opacity: String(opacity),
                     stroke: isMain ? "#ffffff" : "none",
-                    strokeWidth: String(isMain ? 1.5 * depthScale * zoom : 0),
+                    strokeWidth: String(isMain ? strokeWidth : 0),
                   })
                 );
               }
