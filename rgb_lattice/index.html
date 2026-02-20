@@ -149,10 +149,84 @@
       letter-spacing: 0.01em;
     }
 
-    .intro p {
+    .intro .eyebrow {
       margin: 0;
-      line-height: 1.5;
+      font-size: 0.72rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+
+    .intro h2 {
+      margin: 1.4rem 0 0.45rem;
+      font-size: 1.3rem;
+      line-height: 1.25;
+      color: #f8fafc;
+    }
+
+    .intro h3 {
+      margin: 1.1rem 0 0.4rem;
+      font-size: 1.08rem;
+      color: #e2e8f0;
+      letter-spacing: 0.01em;
+    }
+
+    .intro .lead {
+      margin: 0;
+      font-size: 1.04rem;
+      line-height: 1.55;
       color: #cbd5e1;
+    }
+
+    .intro p {
+      margin: 0.45rem 0;
+      line-height: 1.55;
+      color: #cbd5e1;
+    }
+
+    .intro ul,
+    .intro ol {
+      margin: 0.5rem 0 0.5rem;
+      padding-left: 1.2rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    .intro li {
+      margin: 0.2rem 0;
+    }
+
+    .intro .rule {
+      width: 100%;
+      border: 0;
+      border-top: 1px solid rgba(148, 163, 184, 0.35);
+      margin: 1.4rem 0 0.6rem;
+    }
+
+    .intro code,
+    .intro pre {
+      font-family: "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.84rem;
+    }
+
+    .intro pre {
+      background: rgba(2, 6, 23, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 10px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      color: #f8fafc;
+      margin: 0.6rem 0;
+      width: min(100%, 740px);
+    }
+
+    .intro .math {
+      font-family: "Times New Roman", serif;
+      letter-spacing: 0.01em;
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      margin: 0.25rem 0;
     }
 
     .diagrams-column {
@@ -199,12 +273,175 @@
   </style>
 </head>
 <body>
-  <main class="page">
-    <section class="intro">
-      <h1>RGB Lattice</h1>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae sapien sed erat dictum fermentum a non dui. Nulla facilisi. Vestibulum posuere mi sed odio dignissim, nec laoreet elit tincidunt.</p>
-      <p>Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Cras vel erat sed nisi luctus tincidunt. Phasellus in dui sed neque tincidunt posuere at et erat. Sed a lorem consequat, feugiat risus vel, porttitor justo.</p>
-      <p>In hac habitasse platea dictumst. Donec malesuada, nisl sed condimentum dictum, augue ex luctus mauris, eu tincidunt nibh nibh a erat. Aliquam erat volutpat. Nam tincidunt enim eget arcu dictum, eu tempor nibh laoreet.</p>
+    <main class="page">
+      <section class="intro">
+        <p class="eyebrow">Concept Framework</p>
+        <h1>The Lattice Sieve</h1>
+        <h2>A Method for Building Conceptual Vector Spaces from Independent Axes</h2>
+        <p class="lead">
+          A conceptual domain becomes geometrically thinkable when it is expressed as a <strong>product space of independent axes</strong>,
+          progressing from <strong>binary extremes</strong> to refined discrete levels, and eventually to a
+          <strong>continuous coordinate system</strong>. The purpose is not classification; it is <strong>conceptual geometry</strong>:
+          coordinates, interpolation, distance, gradients, and compositional structure.
+        </p>
+
+        <hr class="rule" />
+
+        <h2>Core thesis</h2>
+        <p>
+          A conceptual domain becomes geometrically thinkable when it is expressed as a <strong>product space of
+          independent axes</strong>, progressing from <strong>binary extremes</strong> to refined discrete levels and eventually an eventual
+          continuous coordinate system. The purpose is not classification; it is <strong>conceptual geometry</strong>:
+          coordinates, interpolation, distance, gradients, and compositional structure.
+        </p>
+
+        <h2>1. The object being built</h2>
+        <h3>1.1 Conceptual Vector Space</h3>
+        <p>A <strong>conceptual vector space</strong> is a coordinate system over a domain of things such that each thing corresponds to a point.</p>
+        <ul>
+          <li><strong>Point</strong> = assignment of values to a set of axes</li>
+          <li><strong>Axes</strong> = independent dimensions of variation intrinsic to the domain element</li>
+          <li><strong>Geometry</strong> = meaningful notions of proximity, interpolation, and movement along an axis</li>
+        </ul>
+        <p>This is not a taxonomy. A taxonomy is a partition. A vector space is a <strong>structure</strong>.</p>
+
+        <h2>2. The Lattice Sieve in one line</h2>
+        <p><em>Find independent axes by forcing the domain through a strict binary cube first, then refine each axis into multi-level chains, and optionally converge to a continuous coordinate system.</em></p>
+
+        <h2>3. The three-layer construction</h2>
+        <p>The method has three structural layers. Each layer is a stronger commitment.</p>
+
+        <h3>Layer A. Boolean Skeleton (Bounds and Basis)</h3>
+        <p><strong>Goal:</strong> establish <em>axes</em> and <em>extremes</em> with maximal falsifiability.</p>
+        <ul>
+          <li>Choose <strong>N independent binary primitives</strong>. Each axis has two states: low or high.</li>
+          <li>The induced structure is a <strong>Boolean lattice</strong> <span class="math">C₂^N</span> with <span class="math">2^N</span> corners.</li>
+          <li>The output is a <strong>basis and bounding box</strong> for the domain.</li>
+        </ul>
+        <p>This layer does not “contain” the full domain. It defines the coordinate frame: origin, extremes, and independence.</p>
+        <p><strong>Why it matters:</strong> Binary axes are the hardest to fake. If an axis is not truly independent, the cube breaks quickly: categories collide, span cells, or generate forbidden corners.</p>
+
+        <h3>Layer B. Product Lattice Refinement (Discrete Resolution)</h3>
+        <p><strong>Goal:</strong> increase expressiveness without changing the underlying axes.</p>
+        <ul>
+          <li>Replace some binary axes with <strong>k-level chains</strong> (for example <span class="math">0, 0.5, 1</span>).</li>
+          <li>The structure becomes a finite product lattice <span class="math">∏ C<sub>kᵢ</sub></span>.</li>
+        </ul>
+        <p>This is still a lattice and still coordinate-like. It is <strong>not</strong> Boolean unless all axes are binary.</p>
+        <p><strong>Key fact:</strong> The Boolean cube is a <strong>sublattice</strong> of the refined product lattice, living at extremes of each axis.</p>
+
+        <h3>Layer C. Continuous Coordinate Limit (Conceptual Geometry)</h3>
+        <p><strong>Goal:</strong> move from discrete cells to true geometry.</p>
+        <ul>
+          <li>Replace discrete levels with continuous intervals where appropriate, yielding a continuous product space (for example <span class="math">[0,1]^N</span>).</li>
+          <li>Now the domain admits interpolation, gradients, smooth tradeoff curves, and distance metrics (where defined).</li>
+        </ul>
+        <p>This is where conceptual RGB happens: the space becomes navigable, not just nameable.</p>
+
+        <h2>4. The sieve mechanics</h2>
+        <p>The sieve accepts or rejects candidate axes based on structural behavior.</p>
+
+        <h3>4.1 Inputs</h3>
+        <ul>
+          <li><strong>Domain:</strong> the kind of thing being analyzed.</li>
+          <li><strong>Candidate categories:</strong> an initial set of recognizable regions or types.</li>
+          <li><strong>Candidate primitives:</strong> proposed axes of variation.</li>
+        </ul>
+
+        <h3>4.2 Constraints on valid axes</h3>
+        <ol>
+          <li><strong>Intrinsic:</strong> property of the domain element itself.</li>
+          <li><strong>Independent:</strong> not logically implied by other axes.</li>
+          <li><strong>Toggleable:</strong> you can change only this axis.</li>
+          <li><strong>Meaningful:</strong> changing it is domain-recognized.</li>
+        </ol>
+
+        <h3>4.3 Structural failure modes</h3>
+        <p><strong>A. Category spans multiple cells</strong> — it is not an atom. The category is a union or a mixture.</p>
+        <p><strong>B. Two categories land in the same cell</strong> — false distinction or non-orthogonal criteria.</p>
+        <p><strong>C. Empty cells appear</strong> — each empty cell is either unnamed but real, structurally forbidden, or degenerate.</p>
+        <p><strong>D. Forbidden corners proliferate</strong> — detect dependencies or non-intrinsic leakage; revise axes.</p>
+
+        <h2>5. The RGB validation example</h2>
+        <h3>5.1 Boolean skeleton</h3>
+        <p>Binary RGB yields the 8-corner cube <span class="math">{0,1}^3</span>.</p>
+        <ul>
+          <li>It defines basis vectors <strong>R, G, B</strong>, origin <strong>(0,0,0)</strong>, and bound <strong>(1,1,1)</strong>.</li>
+          <li>It is a Boolean lattice and coordinate frame.</li>
+        </ul>
+        <h3>5.2 Refinement</h3>
+        <p>Ternary RGB <span class="math">{0,0.5,1}^3</span> yields 27 points and keeps the original corners embedded.</p>
+        <h3>5.3 Continuous limit</h3>
+        <p>Continuous RGB <span class="math">[0,1]^3</span> yields the full gradient geometry.</p>
+        <p><strong>Crucial interpretation:</strong> the binary cube holds the extremes that define the coordinate system; refining creates the full space.</p>
+
+        <h2>6. Deliverables</h2>
+        <ol>
+          <li>Axis specification, intrinsicness argument, and toggle tests.</li>
+          <li>Skeleton cube mapping: known regions, collisions, spans.</li>
+          <li>Refinement plan: where multi-level axes are justified.</li>
+          <li>Coordinate semantics: movement, interpolation, and optional distance metric.</li>
+          <li>What geometry reveals: unnamed regions, invalid axes, unions, and true degrees of freedom.</li>
+        </ol>
+
+        <h2>7. Operating principles</h2>
+        <h3>7.1 Boolean first, not because it is “true,” but because it is maximally diagnostic</h3>
+        <p>Binary axes force independence and surface contradictions quickly.</p>
+        <h3>7.2 Refinement is earned</h3>
+        <p>An axis gets more than two levels only after it survives the skeleton.</p>
+        <h3>7.3 The goal is navigability</h3>
+        <p>Success is not prettier classification. Success is a coordinate system that supports controlled variation, interpolation, and discovery.</p>
+
+        <h2>8. Prompt template</h2>
+        <p>Use this when applying the method:</p>
+        <pre><code># Lattice Sieve: Build a Conceptual Vector Space
+
+## Domain
+I want a conceptual coordinate system for:
+
+[DOMAIN ELEMENT TYPE]: _______________________________
+
+Examples of domain elements:
+- _________________________________________________
+- _________________________________________________
+
+## Candidate regions (optional seed, not a goal)
+List recognizable “regions” or types in this domain (5–15):
+- _________________________________________________
+
+## Step 1: Propose a Boolean skeleton
+Propose N independent binary axes (prefer N = 3 or 4).
+For each axis:
+- Name it
+- Define Low vs High precisely
+- Argue it is intrinsic to the domain
+- Provide two examples that differ ONLY on this axis (toggle test)
+
+Then form the Boolean cube {0,1}^N.
+
+## Step 2: Map known regions
+Map each seed region/type to:
+- a single corner (atom), or
+- an explicit union of corners (higher-order region)
+
+Flag:
+- collisions (two regions in same corner)
+- spans (a region covering many corners)
+
+## Step 3: Diagnose empties
+For each empty corner:
+- Is it a real but unnamed region? Name + examples.
+- Is it structurally forbidden? Prove the dependency.
+- Is it degenerate? Explain which axes collapse.
+
+If many forbidden corners appear, revise axes.
+
+## Step 4: Refine axes into a product lattice
+For axes that survived and merit nuance, refine them into k-level chains:
+Example levels: {0, 0.5, 1} or {0,1,2,3}.
+
+Build the product lattice ∏ C_kᵢ.
+Repeat mapping and gap analysis.</code></pre>
     </section>
 
     <section class="diagrams-column">
