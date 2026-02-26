@@ -12,14 +12,23 @@
     </header>
 
     <main class="max-w-4xl mx-auto px-6 pb-20 space-y-8">
-        <!-- Clock Game -->
-        <a href="./clock_game/" class="block group">
-            <section class="bg-white rounded-2xl shadow-sm border border-gray-200 p-10 transition-all duration-200 hover:shadow-lg hover:border-gray-300">
-                <h2 class="text-3xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Clock Game</h2>
-                <p class="mt-4 text-lg text-gray-600">An interactive clock rotation puzzle: solve for the target orientation in the fewest moves.</p>
-                <span class="mt-6 inline-block text-blue-600 font-medium group-hover:underline">Read more &rarr;</span>
-            </section>
-        </a>
+        <!-- Rotation Puzzles -->
+        <section class="bg-white rounded-2xl shadow-sm border border-gray-200 p-10">
+            <h2 class="text-3xl font-bold text-gray-900">Rotation Puzzles</h2>
+            <p class="mt-4 text-lg text-gray-600">Explore rotation-based shortest-move game variants.</p>
+            <div class="mt-6 grid gap-3 sm:grid-cols-2">
+                <a href="./clock_game/" class="block rounded-xl border border-blue-200 bg-slate-50 p-5 transition-all duration-200 hover:border-blue-400 hover:shadow-sm">
+                    <h3 class="text-xl font-bold text-gray-900">Clock Game</h3>
+                    <p class="mt-2 text-base text-gray-600">Rotate a clock hand between start and target positions with minimal moves.</p>
+                    <span class="mt-4 inline-block text-blue-600 font-medium hover:underline">Open</span>
+                </a>
+                <a href="./clock_game/cube.html" class="block rounded-xl border border-blue-200 bg-slate-50 p-5 transition-all duration-200 hover:border-blue-400 hover:shadow-sm">
+                    <h3 class="text-xl font-bold text-gray-900">Cube Game</h3>
+                    <p class="mt-2 text-base text-gray-600">Two-axis rotation game on a wrapped 6×6 torus.</p>
+                    <span class="mt-4 inline-block text-blue-600 font-medium hover:underline">Open</span>
+                </a>
+            </div>
+        </section>
 
         <!-- RGB Lattice -->
         <a href="./rgb_lattice/" class="block group">
