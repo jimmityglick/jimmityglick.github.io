@@ -96,13 +96,6 @@
             border-color: #a6e3a1;
             font-weight: bold;
         }
-        .status-text {
-            color: #f38ba8;
-            font-size: 0.85rem;
-            margin-bottom: 1.5rem;
-            min-height: 1.2rem;
-            font-weight: bold;
-        }
         .info-panel {
             margin-top: 1rem;
             border: 1px solid #45475a;
@@ -199,7 +192,6 @@
                     <button id="btnRandom" data-mode="random">White Noise (Harsh)</button>
                     <button id="btnSmooth" data-mode="smooth">Smooth Wander</button>
                 </div>
-                <div class="status-text" id="interruptStatus"></div>
             </div>
 
             <div class="input-panel">
@@ -236,7 +228,6 @@
             const autoSpeed = 0.10; // Slightly slower base speed to observe complex patterns
             
             const buttons = document.querySelectorAll('.button-group button');
-            const statusText = document.getElementById('interruptStatus');
             const infoTitle = document.getElementById('infoTitle');
             const infoLead = document.getElementById('infoLead');
             const infoDetail = document.getElementById('infoDetail');
@@ -328,7 +319,6 @@
                         mouseX = 0;
                         mouseY = 0;
                         e.target.classList.remove('active');
-                        statusText.textContent = "";
                         updateInfoPanel(null);
                     } else {
                         // Toggle on a new mode
@@ -337,7 +327,6 @@
                         // Update UI
                         buttons.forEach(b => b.classList.remove('active'));
                         e.target.classList.add('active');
-                        statusText.textContent = "Simulating... (Move mouse inside pad to interrupt)";
                         updateInfoPanel(clickedMode);
                     }
                 });
@@ -345,17 +334,13 @@
 
             updateInfoPanel(null, false);
 
-            // 1. Capture Data & Handle Interrupts (Confined to Input Pad)
+            // 1. Capture Manual Input (Confined to Input Pad)
             const inputCanvas = document.getElementById('inputCanvas');
             const inputCtx = inputCanvas.getContext('2d');
 
             inputCanvas.addEventListener('mousemove', (e) => {
-                // Hardware Interrupt: If we are faking data, stop immediately upon physical movement
                 if (currentAutoMode) {
-                    currentAutoMode = null;
-                    buttons.forEach(b => b.classList.remove('active'));
-                    statusText.textContent = "";
-                    updateInfoPanel(null);
+                    return;
                 }
 
                 // Bulletproof coordinate mapping: account for CSS scaling and bounding box
