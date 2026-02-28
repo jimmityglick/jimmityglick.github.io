@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fourier Transform Visualization</title>
+    <style>
+        body {
+            background-color: #1e1e2e;
+            color: #cdd6f4;
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .layout {
+            width: 100%;
+        }
+        .analysis-panel,
+        .input-panel {
+            width: 100%;
+        }
+        .input-panel {
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            width: 100%;
+        }
+        canvas {
+            background-color: #181825;
+            border: 1px solid #45475a;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            width: 100%;
+            height: 200px;
+            display: block;
+        }
+        #inputCanvas {
+            width: min(400px, 100%);
+            height: auto;
+            aspect-ratio: 1 / 1;
+            margin: 0 auto;
+            display: block;
+            cursor: crosshair;
+        }
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+            color: #89b4fa;
+        }
+        p.desc {
+            font-size: 0.9rem;
+            color: #a6adc8;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: -1rem;
+            margin-bottom: 0.5rem;
+            width: 100%;
+        }
+        button {
+            background-color: transparent;
+            color: #cdd6f4;
+            border: 1px solid #89b4fa;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        button:hover {
+            background-color: #313244;
+        }
+        button.active {
+            background-color: #a6e3a1;
+            color: #11111b;
+            border-color: #a6e3a1;
+            font-weight: bold;
+        }
+        .status-text {
+            color: #f38ba8;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            min-height: 1.2rem;
+            font-weight: bold;
+        }
+        .info-panel {
+            margin-top: 1rem;
+            border: 1px solid #45475a;
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+            background: linear-gradient(160deg, rgba(24, 24, 37, 0.98), rgba(30, 30, 46, 0.94));
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.26);
+            min-height: 11.5rem;
+        }
+        .info-content {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 180ms ease, transform 180ms ease;
+        }
+        .info-content.is-fading {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        .info-panel h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: #f9e2af;
+        }
+        .info-panel p {
+            margin: 0;
+            font-size: 0.88rem;
+            color: #bac2de;
+            line-height: 1.45;
+        }
+        .info-panel p + p {
+            margin-top: 0.55rem;
+        }
+        .info-panel .info-hint {
+            color: #a6e3a1;
+            font-weight: 600;
+        }
+        @media (min-width: 1025px) {
+            body {
+                padding: 2rem 1.25rem;
+            }
+            .container {
+                max-width: 1320px;
+                align-items: stretch;
+            }
+            .layout {
+                display: grid;
+                grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+                grid-template-areas: "input analysis";
+                gap: 1.5rem;
+                align-items: start;
+            }
+            .analysis-panel {
+                grid-area: analysis;
+            }
+            .input-panel {
+                grid-area: input;
+            }
+            .button-group {
+                justify-content: center;
+                flex-wrap: nowrap;
+                gap: 0.35rem;
+            }
+            .button-group button {
+                white-space: nowrap;
+                font-size: clamp(0.62rem, 0.42rem + 0.35vw, 0.78rem);
+                padding: 0.45rem clamp(0.45rem, 0.25rem + 0.4vw, 0.75rem);
+            }
+            #inputCanvas {
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="layout">
+            <div class="analysis-panel">
+                <div class="content-wrapper">
+                    <h2>Time Domain (The "Smoothie")</h2>
+                    <p class="desc">Move your mouse! <span style="color:#a6e3a1; font-weight:bold;">Green tracks X (horizontal)</span>, <span style="color:#f38ba8; font-weight:bold;">Red tracks Y (vertical)</span>.</p>
+                    <canvas id="timeCanvas" width="800" height="200"></canvas>
+
+                    <h2>Frequency Domain (The "Ingredients")</h2>
+                    <p class="desc">Real-time output of the DFT. Shake your mouse side-to-side (green spikes) or up-and-down (red spikes) to isolate the axes.</p>
+                    <canvas id="freqCanvas" width="800" height="200"></canvas>
+                </div>
+
+                <div class="button-group">
+                    <button id="btnCircle" data-mode="circle">Perfect Circle</button>
+                    <button id="btnFigure8" data-mode="figure8">Figure Eight</button>
+                    <button id="btnSquare" data-mode="square">Square Wave Sweep</button>
+                    <button id="btnSpiro" data-mode="spiro">Spirograph Orbit</button>
+                    <button id="btnRandom" data-mode="random">White Noise (Harsh)</button>
+                    <button id="btnSmooth" data-mode="smooth">Smooth Wander</button>
+                </div>
+                <div class="status-text" id="interruptStatus"></div>
+            </div>
+
+            <div class="input-panel">
+                <h2>Input Pad (The Vector Source)</h2>
+                <p class="desc">Move your mouse inside this box to generate the signal. The math only listens when you are hovering here.</p>
+                <canvas id="inputCanvas" width="400" height="400"></canvas>
+                <div class="info-panel" id="modeInfoPanel" aria-live="polite">
+                    <div class="info-content" id="modeInfoContent">
+                        <h3 id="infoTitle">Fourier Transform: Hidden Patterns, Revealed</h3>
+                        <p id="infoLead">The Fourier Transform is a pattern detector for motion. It takes your path through time and breaks it into simple repeating waves.</p>
+                        <p id="infoDetail">On this page, the top graph is your raw motion, and the bottom graph shows the frequency ingredients. Sharp spikes mean strong repeating rhythm; broad fuzz means noisy or complex movement.</p>
+                        <p class="info-hint" id="infoHint">Try tracing a steady loop, then compare it with random movement to feel the difference between order and noise.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const N = 128; // Buffer size
+            const timeDataX = new Array(N).fill(0);
+            const timeDataY = new Array(N).fill(0);
+            let mouseX = 0;
+            let mouseY = 0;
+            
+            // Physics state for Smooth Wander mode
+            let velX = 0;
+            let velY = 0;
+
+            // Synthetic Stream State
+            let currentAutoMode = null;
+            let autoAngle = 0;
+            const autoSpeed = 0.10; // Slightly slower base speed to observe complex patterns
+            
+            const buttons = document.querySelectorAll('.button-group button');
+            const statusText = document.getElementById('interruptStatus');
+            const infoTitle = document.getElementById('infoTitle');
+            const infoLead = document.getElementById('infoLead');
+            const infoDetail = document.getElementById('infoDetail');
+            const infoHint = document.getElementById('infoHint');
+            const infoContent = document.getElementById('modeInfoContent');
+            const infoFadeMs = 180;
+            let infoTransitionNonce = 0;
+
+            const modeInfoContent = {
+                default: {
+                    title: "Fourier Transform: Hidden Patterns, Revealed",
+                    lead: "The Fourier Transform is a pattern detector for motion. It takes your path through time and breaks it into simple repeating waves.",
+                    detail: "On this page, the top graph is your raw motion, and the bottom graph shows the frequency ingredients. Sharp spikes mean strong repeating rhythm; broad fuzz means noisy or complex movement.",
+                    hint: "Try tracing a steady loop, then compare it with random movement to feel the difference between order and noise."
+                },
+                circle: {
+                    title: "Perfect Circle: One Clean Rhythm",
+                    lead: "A circle is steady periodic motion, so both axes carry one dominant frequency.",
+                    detail: "Because X and Y are phase-shifted versions of the same cycle, the spectrum forms focused peaks instead of scattered energy.",
+                    hint: "This is your clean baseline: tight pattern in time, tight spikes in frequency."
+                },
+                figure8: {
+                    title: "Figure Eight: Harmonics In a Ratio",
+                    lead: "This path runs one axis faster than the other, creating a clear 1:2 relationship.",
+                    detail: "Fourier captures that ratio directly: one dominant peak appears at roughly double the frequency bin of the other axis.",
+                    hint: "Frequency ratios like this are the same idea behind musical intervals and resonance."
+                },
+                square: {
+                    title: "Square Wave Sweep: Built From Odd Harmonics",
+                    lead: "Sharp corners cannot come from a single smooth wave, so extra harmonics are required.",
+                    detail: "You should see a strong base frequency with added odd multiples (especially 3rd and 5th), which is classic Fourier series behavior.",
+                    hint: "The sharper the motion, the richer the high-frequency ingredients."
+                },
+                spiro: {
+                    title: "Spirograph Orbit: Mixed Frequencies",
+                    lead: "This combines a slow orbit with a fast wobble, so multiple rhythms coexist.",
+                    detail: "In the spectrum, that mix appears as distinct peaks from different motion components instead of one single spike.",
+                    hint: "Complex paths are usually just simple frequencies layered together."
+                },
+                random: {
+                    title: "White Noise: Energy Everywhere",
+                    lead: "Random movement has no stable period, so frequency energy spreads out broadly.",
+                    detail: "Instead of tall clean spikes, the graph looks flatter and noisier, which is the fingerprint of stochastic motion.",
+                    hint: "Noise hides structure in time and frequency alike."
+                },
+                smooth: {
+                    title: "Smooth Wander: Low-Frequency Bias",
+                    lead: "This motion is random with momentum, so it changes gradually instead of jerking rapidly.",
+                    detail: "Gradual changes emphasize slower oscillations, pushing more energy into lower frequencies and reducing harsh high-frequency content.",
+                    hint: "Compare this mode with white noise to see what 'smoothness' means mathematically."
+                }
+            };
+
+            function setInfoPanelText(content) {
+                infoTitle.textContent = content.title;
+                infoLead.textContent = content.lead;
+                infoDetail.textContent = content.detail;
+                infoHint.textContent = content.hint;
+            }
+
+            function updateInfoPanel(mode, animate = true) {
+                const contentKey = mode && modeInfoContent[mode] ? mode : 'default';
+                const content = modeInfoContent[contentKey];
+
+                if (!animate) {
+                    infoContent.classList.remove('is-fading');
+                    setInfoPanelText(content);
+                    return;
+                }
+
+                const nonce = ++infoTransitionNonce;
+                infoContent.classList.add('is-fading');
+
+                window.setTimeout(() => {
+                    if (nonce !== infoTransitionNonce) return;
+                    setInfoPanelText(content);
+                    infoContent.classList.remove('is-fading');
+                }, infoFadeMs);
+            }
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    const clickedMode = e.target.getAttribute('data-mode');
+                    
+                    if (currentAutoMode === clickedMode) {
+                        // Toggle off if clicking the already active button
+                        currentAutoMode = null;
+                        mouseX = 0;
+                        mouseY = 0;
+                        e.target.classList.remove('active');
+                        statusText.textContent = "";
+                        updateInfoPanel(null);
+                    } else {
+                        // Toggle on a new mode
+                        currentAutoMode = clickedMode;
+                        
+                        // Update UI
+                        buttons.forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        statusText.textContent = "Simulating... (Move mouse inside pad to interrupt)";
+                        updateInfoPanel(clickedMode);
+                    }
+                });
+            });
+
+            updateInfoPanel(null, false);
+
+            // 1. Capture Data & Handle Interrupts (Confined to Input Pad)
+            const inputCanvas = document.getElementById('inputCanvas');
+            const inputCtx = inputCanvas.getContext('2d');
+
+            inputCanvas.addEventListener('mousemove', (e) => {
+                // Hardware Interrupt: If we are faking data, stop immediately upon physical movement
+                if (currentAutoMode) {
+                    currentAutoMode = null;
+                    buttons.forEach(b => b.classList.remove('active'));
+                    statusText.textContent = "";
+                    updateInfoPanel(null);
+                }
+
+                // Bulletproof coordinate mapping: account for CSS scaling and bounding box
+                const rect = inputCanvas.getBoundingClientRect();
+                const scaleX = inputCanvas.width / rect.width;
+                const scaleY = inputCanvas.height / rect.height;
+                
+                const actualX = (e.clientX - rect.left) * scaleX;
+                const actualY = (e.clientY - rect.top) * scaleY;
+
+                // Normalize X and Y using the canvas's internal coordinates (-1.0 to 1.0)
+                mouseX = (actualX - (inputCanvas.width / 2)) / (inputCanvas.width / 2);
+                mouseY = ((inputCanvas.height / 2) - actualY) / (inputCanvas.height / 2);
+            });
+
+            // Decay signal to zero if mouse leaves the pad so the wave doesn't get stuck
+            inputCanvas.addEventListener('mouseleave', () => {
+                if (!currentAutoMode) {
+                    mouseX = 0;
+                    mouseY = 0;
+                }
+            });
+
+            // 2. The Discrete Fourier Transform (DFT) Engine
+            function computeDFT(x) {
+                const X = [];
+                const N = x.length;
+                for (let k = 0; k < N; k++) {
+                    let re = 0;
+                    let im = 0;
+                    for (let n = 0; n < N; n++) {
+                        const phi = (2 * Math.PI * k * n) / N;
+                        re += x[n] * Math.cos(phi);
+                        im -= x[n] * Math.sin(phi);
+                    }
+                    X[k] = Math.sqrt(re * re + im * im) / (N / 2); 
+                }
+                return X;
+            }
+
+            // 3. Canvas Rendering Logic
+            function drawSignals(canvasId, datasets, colors, isBarChart) {
+                const canvas = document.getElementById(canvasId);
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width;
+                const height = canvas.height;
+                
+                ctx.clearRect(0, 0, width, height);
+                
+                // Draw horizontal zero-axis line
+                ctx.beginPath();
+                ctx.moveTo(0, height / 2);
+                ctx.lineTo(width, height / 2);
+                ctx.strokeStyle = '#313244';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.globalCompositeOperation = isBarChart ? 'screen' : 'source-over';
+
+                datasets.forEach((data, datasetIndex) => {
+                    ctx.beginPath();
+                    ctx.strokeStyle = colors[datasetIndex];
+                    ctx.fillStyle = colors[datasetIndex];
+                    ctx.lineWidth = 2;
+
+                    for (let i = 0; i < data.length; i++) {
+                        if (isBarChart) {
+                            // N/2 is the Nyquist limit, but N/4 applies a 2x zoom on the relevant low frequencies
+                            const displayBins = data.length / 4; 
+                            
+                            // Stop drawing once we hit our zoom limit
+                            if (i >= displayBins) break; 
+                            
+                            const x = (i / displayBins) * width;
+                            const y = data[i] * (height * 0.8); 
+                            const barWidth = Math.max(2, (width / displayBins) - 1);
+                            
+                            ctx.fillRect(x + (datasetIndex * 3), height, barWidth, -y);
+                        } else {
+                            const x = (i / data.length) * width;
+                            const y = height / 2 - (data[i] * (height / 2.5));
+                            if (i === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        }
+                    }
+                    if (!isBarChart) ctx.stroke();
+                });
+                
+                ctx.globalCompositeOperation = 'source-over'; // reset blending
+            }
+
+            // 4. The Real-Time Animation Loop
+            function animate() {
+                // Inject parametric equations based on the selected mode
+                if (currentAutoMode === 'circle') {
+                    // X and Y share exact same frequency, offset by 90 degrees (sin vs cos)
+                    mouseX = Math.cos(autoAngle) * 0.7; 
+                    mouseY = Math.sin(autoAngle) * 0.7;
+                    autoAngle += autoSpeed;
+                } 
+                else if (currentAutoMode === 'figure8') {
+                    // Lissajous curve: Y oscillates exactly twice as fast as X
+                    mouseX = Math.sin(autoAngle) * 0.7;
+                    mouseY = Math.sin(autoAngle * 2) * 0.7; 
+                    autoAngle += autoSpeed;
+                }
+                else if (currentAutoMode === 'square') {
+                    // Approximating a square wave horizontally using harmonic odds (1f + 3f + 5f)
+                    // We zero out the Y axis to make the X harmonics perfectly clear in the green spectrum
+                    mouseX = (Math.sin(autoAngle) + Math.sin(autoAngle * 3)/3 + Math.sin(autoAngle * 5)/5) * 0.85;
+                    mouseY = 0;
+                    autoAngle += (autoSpeed * 0.5); // Slower sweep for visibility
+                }
+                else if (currentAutoMode === 'spiro') {
+                    // Epitrochoid: Combining a slow fundamental orbit with a rapid secondary orbit (8x speed)
+                    mouseX = (Math.cos(autoAngle) * 0.5) + (Math.cos(autoAngle * 8) * 0.2);
+                    mouseY = (Math.sin(autoAngle) * 0.5) + (Math.sin(autoAngle * 8) * 0.2);
+                    autoAngle += (autoSpeed * 0.7);
+                }
+                else if (currentAutoMode === 'random') {
+                    // Stochastic Noise: A highly volatile random walk (White Noise)
+                    mouseX += (Math.random() - 0.5) * 0.8;
+                    mouseY += (Math.random() - 0.5) * 0.8;
+                    // Clamp to the input pad boundaries [-1.0, 1.0]
+                    mouseX = Math.max(-1, Math.min(1, mouseX));
+                    mouseY = Math.max(-1, Math.min(1, mouseY));
+                }
+                else if (currentAutoMode === 'smooth') {
+                    // Brownian Motion with Momentum (Continuous Random)
+                    // 1. Inject random acceleration
+                    velX += (Math.random() - 0.5) * 0.04;
+                    velY += (Math.random() - 0.5) * 0.04;
+
+                    // 2. Apply friction (damping) so it doesn't accelerate infinitely
+                    velX *= 0.96;
+                    velY *= 0.96;
+
+                    // 3. Soft boundary repulsion (keeps it safely inside the pad)
+                    if (mouseX > 0.8) velX -= 0.005;
+                    if (mouseX < -0.8) velX += 0.005;
+                    if (mouseY > 0.8) velY -= 0.005;
+                    if (mouseY < -0.8) velY += 0.005;
+
+                    // 4. Update position based on velocity
+                    mouseX += velX;
+                    mouseY += velY;
+
+                    // Hard clamp just in case of physics glitch
+                    mouseX = Math.max(-1, Math.min(1, mouseX));
+                    mouseY = Math.max(-1, Math.min(1, mouseY));
+                }
+
+                // Update sliding windows for both X and Y
+                timeDataX.push(mouseX);
+                timeDataX.shift();
+                
+                timeDataY.push(mouseY);
+                timeDataY.shift();
+
+                // Compute independent frequencies
+                const frequencyDataX = computeDFT(timeDataX);
+                const frequencyDataY = computeDFT(timeDataY);
+
+                // Render
+                drawSignals('timeCanvas', [timeDataX, timeDataY], ['#a6e3a1', '#f38ba8'], false);
+                drawSignals('freqCanvas', [frequencyDataX, frequencyDataY], ['#a6e3a1', '#f38ba8'], true); 
+
+                // Render Input Dot on the Input Pad
+                inputCtx.clearRect(0, 0, inputCanvas.width, inputCanvas.height);
+                
+                // Draw crosshairs for visual reference
+                inputCtx.beginPath();
+                inputCtx.moveTo(0, inputCanvas.height / 2);
+                inputCtx.lineTo(inputCanvas.width, inputCanvas.height / 2);
+                inputCtx.moveTo(inputCanvas.width / 2, 0);
+                inputCtx.lineTo(inputCanvas.width / 2, inputCanvas.height);
+                inputCtx.strokeStyle = '#313244';
+                inputCtx.stroke();
+
+                // Draw the tracking dot
+                const dotX = (mouseX * (inputCanvas.width / 2)) + (inputCanvas.width / 2);
+                const dotY = (inputCanvas.height / 2) - (mouseY * (inputCanvas.height / 2));
+                
+                inputCtx.beginPath();
+                inputCtx.arc(dotX, dotY, 8, 0, 2 * Math.PI);
+                // Fixed ReferenceError: updated isAutoMode to check currentAutoMode
+                inputCtx.fillStyle = currentAutoMode ? '#a6e3a1' : '#cdd6f4';
+                inputCtx.fill();
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        });
+    </script>
+</body>
+</html>
