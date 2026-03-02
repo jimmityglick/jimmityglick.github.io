@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeros of the Riemann Zeta Function</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&family=JetBrains+Mono:wght@300;400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    color: #c8c4b8;
+    font-family: 'Crimson Pro', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .grain {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+
+  h1 {
+    font-size: 2.4em;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: #e8e4d8;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-size: 1.15em;
+    font-style: italic;
+    font-weight: 300;
+    color: #7a7668;
+    margin-bottom: 50px;
+  }
+
+  .chart-section {
+    margin-bottom: 60px;
+  }
+
+  .chart-title {
+    font-size: 1.3em;
+    font-weight: 400;
+    color: #b8b4a8;
+    margin-bottom: 6px;
+  }
+
+  .chart-desc {
+    font-size: 0.95em;
+    font-weight: 300;
+    color: #6a6658;
+    margin-bottom: 20px;
+    max-width: 700px;
+    line-height: 1.6;
+  }
+
+  canvas {
+    width: 100%;
+    border: 1px solid #1a1a24;
+    border-radius: 2px;
+    background: #06060a;
+  }
+
+  .zero-table {
+    margin-top: 50px;
+  }
+
+  .zero-table h2 {
+    font-size: 1.3em;
+    font-weight: 400;
+    color: #b8b4a8;
+    margin-bottom: 16px;
+  }
+
+  .zeros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+  }
+
+  .zero-card {
+    background: #0e0e15;
+    border: 1px solid #1a1a24;
+    padding: 14px 18px;
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    font-weight: 300;
+    transition: border-color 0.3s;
+    cursor: default;
+  }
+
+  .zero-card:hover {
+    border-color: #c4463a;
+  }
+
+  .zero-card .label {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.85em;
+    color: #4a4840;
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .zero-card .value {
+    color: #e8e4d8;
+  }
+
+  .zero-card .value .real {
+    color: #c4463a;
+  }
+
+  .zero-card .value .imag {
+    color: #4a90c4;
+  }
+
+  .tooltip {
+    position: absolute;
+    background: #14141e;
+    border: 1px solid #2a2a34;
+    padding: 10px 14px;
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75em;
+    color: #c8c4b8;
+    pointer-events: none;
+    display: none;
+    z-index: 50;
+    line-height: 1.6;
+  }
+
+  .legend {
+    display: flex;
+    gap: 24px;
+    margin-top: 12px;
+    font-size: 0.85em;
+    color: #6a6658;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .insight {
+    margin-top: 50px;
+    padding: 28px 32px;
+    background: #0c0c12;
+    border-left: 2px solid #c4463a;
+    font-size: 1.05em;
+    line-height: 1.7;
+    font-weight: 300;
+    color: #9a9688;
+  }
+
+  .insight em {
+    color: #c8c4b8;
+    font-style: italic;
+  }
+</style>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-P55MSDQTTZ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+
+      gtag("config", "G-P55MSDQTTZ");
+    </script>
+</head>
+<body>
+<div class="grain"></div>
+<div class="container">
+  <h1>The Zeros of ζ(s)</h1>
+  <p class="subtitle">Where the Riemann zeta function vanishes along the critical line</p>
+
+  <div class="chart-section">
+    <p class="chart-title">|ζ(½ + ti)| — Magnitude along the critical line</p>
+    <p class="chart-desc">
+      We walk along the critical line Re(s) = ½, varying t from 0 to 50. 
+      The curve shows how large |ζ| is. Every time it touches zero, that's a non-trivial zero — 
+      marked in red. These are the zeros that RH claims live here and <em>only</em> here.
+    </p>
+    <div style="position:relative;">
+      <canvas id="magnitudeChart" height="360"></canvas>
+      <div class="tooltip" id="magTooltip"></div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#4a90c4;"></div> |ζ(½ + ti)|</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c4463a;"></div> Non-trivial zeros</div>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <p class="chart-title">Real and Imaginary parts of ζ(½ + ti)</p>
+    <p class="chart-desc">
+      A zero requires <em>both</em> the real and imaginary parts to hit zero simultaneously. 
+      Watch how the two curves weave around each other — a zero occurs only at those rare 
+      moments when both cross the axis at the same t value.
+    </p>
+    <div style="position:relative;">
+      <canvas id="realImagChart" height="360"></canvas>
+      <div class="tooltip" id="riTooltip"></div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#c4463a;"></div> Re(ζ)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4a90c4;"></div> Im(ζ)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#d4a030;"></div> Simultaneous zeros</div>
+    </div>
+  </div>
+
+  <div class="zero-table">
+    <h2>The First Ten Non-Trivial Zeros</h2>
+    <div class="zeros-grid" id="zerosGrid"></div>
+  </div>
+
+  <div class="insight">
+    Each zero acts as a <em>frequency</em> in a harmonic series that reconstructs the distribution of primes. 
+    The first zero at t ≈ 14.13 is the "fundamental frequency" — the dominant correction to the prime counting estimate. 
+    Higher zeros add finer and finer detail, like overtones in a musical note. 
+    If even one of these zeros drifted off the line Re(s) = ½, it would 
+    introduce a <em>rogue harmonic</em> — a violent distortion in how primes are distributed.
+  </div>
+</div>
+
+<script>
+// Known non-trivial zeros (imaginary parts, real part is always 1/2)
+const zeroTs = [
+  14.134725, 21.022040, 25.010858, 30.424876, 32.935062,
+  37.586178, 40.918719, 43.327073, 48.005151, 49.773832
+];
+
+// Approximate ζ(1/2 + ti) using the Dirichlet eta / alternating series method
+// η(s) = Σ (-1)^(n-1) / n^s, then ζ(s) = η(s) / (1 - 2^(1-s))
+function zetaOnCriticalLine(t) {
+  // Use Euler-Maclaurin / alternating series with Knopp-Hasse coefficients for better convergence
+  const N = 80;
+  let reEta = 0, imEta = 0;
+
+  for (let n = 1; n <= N; n++) {
+    const sign = (n % 2 === 1) ? 1 : -1;
+    const logn = Math.log(n);
+    const mag = 1 / Math.sqrt(n); // n^(-1/2)
+    const angle = -t * logn;
+    reEta += sign * mag * Math.cos(angle);
+    imEta += sign * mag * Math.sin(angle);
+  }
+
+  // ζ(s) = η(s) / (1 - 2^(1-s))
+  // s = 0.5 + ti, so 1-s = 0.5 - ti
+  // 2^(1-s) = 2^(0.5-ti) = sqrt(2) * 2^(-ti) = sqrt(2) * e^(-ti*ln2)
+  const log2 = Math.log(2);
+  const sqrt2 = Math.sqrt(2);
+  const re2 = sqrt2 * Math.cos(-t * log2);
+  const im2 = sqrt2 * Math.sin(-t * log2);
+
+  // denominator = 1 - 2^(1-s)
+  const dRe = 1 - re2;
+  const dIm = -im2;
+  const dMag2 = dRe * dRe + dIm * dIm;
+
+  // complex division: (reEta + i*imEta) / (dRe + i*dIm)
+  const reZ = (reEta * dRe + imEta * dIm) / dMag2;
+  const imZ = (imEta * dRe - reEta * dIm) / dMag2;
+
+  return { re: reZ, im: imZ, mag: Math.sqrt(reZ * reZ + imZ * imZ) };
+}
+
+// Generate data
+const tMin = 0, tMax = 52;
+const steps = 1200;
+const data = [];
+for (let i = 0; i <= steps; i++) {
+  const t = tMin + (tMax - tMin) * i / steps;
+  const z = zetaOnCriticalLine(t);
+  data.push({ t, ...z });
+}
+
+// Draw magnitude chart
+function drawMagnitudeChart() {
+  const canvas = document.getElementById('magnitudeChart');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+
+  const pad = { top: 20, right: 30, bottom: 40, left: 55 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+
+  const maxMag = 4;
+
+  function toX(t) { return pad.left + (t - tMin) / (tMax - tMin) * plotW; }
+  function toY(v) { return pad.top + plotH - (Math.min(v, maxMag) / maxMag) * plotH; }
+
+  // Grid lines
+  ctx.strokeStyle = '#141420';
+  ctx.lineWidth = 1;
+  for (let v = 0; v <= maxMag; v += 1) {
+    const y = toY(v);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+  }
+  for (let t = 0; t <= 50; t += 10) {
+    const x = toX(t);
+    ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + plotH); ctx.stroke();
+  }
+
+  // Zero line
+  ctx.strokeStyle = '#2a2a34';
+  ctx.beginPath(); ctx.moveTo(pad.left, toY(0)); ctx.lineTo(W - pad.right, toY(0)); ctx.stroke();
+
+  // Magnitude curve
+  ctx.strokeStyle = '#4a90c4';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  data.forEach((d, i) => {
+    const x = toX(d.t), y = toY(d.mag);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Fill under curve
+  ctx.fillStyle = 'rgba(74, 144, 196, 0.06)';
+  ctx.beginPath();
+  ctx.moveTo(toX(data[0].t), toY(0));
+  data.forEach(d => ctx.lineTo(toX(d.t), toY(d.mag)));
+  ctx.lineTo(toX(data[data.length-1].t), toY(0));
+  ctx.fill();
+
+  // Mark zeros
+  zeroTs.forEach(zt => {
+    const x = toX(zt), y = toY(0);
+    
+    // Vertical line
+    ctx.strokeStyle = 'rgba(196, 70, 58, 0.25)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, y); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Dot
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#c4463a';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(196, 70, 58, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Glow
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, 14);
+    grad.addColorStop(0, 'rgba(196, 70, 58, 0.3)');
+    grad.addColorStop(1, 'rgba(196, 70, 58, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // Axes labels
+  ctx.fillStyle = '#4a4840';
+  ctx.font = '12px "JetBrains Mono"';
+  ctx.textAlign = 'center';
+  for (let t = 0; t <= 50; t += 10) {
+    ctx.fillText(t.toString(), toX(t), H - pad.bottom + 20);
+  }
+  ctx.textAlign = 'right';
+  for (let v = 0; v <= maxMag; v += 1) {
+    ctx.fillText(v.toString(), pad.left - 10, toY(v) + 4);
+  }
+
+  ctx.save();
+  ctx.translate(14, pad.top + plotH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#5a5850';
+  ctx.font = '13px "Crimson Pro"';
+  ctx.fillText('|ζ(½ + ti)|', 0, 0);
+  ctx.restore();
+
+  ctx.fillStyle = '#5a5850';
+  ctx.font = '13px "Crimson Pro"';
+  ctx.textAlign = 'center';
+  ctx.fillText('t (imaginary part)', pad.left + plotW / 2, H - 4);
+
+  // Tooltip
+  canvas.addEventListener('mousemove', (e) => {
+    const tooltip = document.getElementById('magTooltip');
+    const br = canvas.getBoundingClientRect();
+    const mx = e.clientX - br.left;
+    const mt = tMin + (mx - pad.left) / plotW * (tMax - tMin);
+    
+    if (mt < tMin || mt > tMax) { tooltip.style.display = 'none'; return; }
+    
+    const idx = Math.round((mt - tMin) / (tMax - tMin) * steps);
+    if (idx < 0 || idx >= data.length) { tooltip.style.display = 'none'; return; }
+    
+    const d = data[idx];
+    const nearZero = zeroTs.find(z => Math.abs(z - d.t) < 0.5);
+    
+    tooltip.innerHTML = `t = ${d.t.toFixed(2)}<br>|ζ| = ${d.mag.toFixed(4)}${nearZero ? '<br><span style="color:#c4463a">● Zero at t ≈ ' + nearZero.toFixed(4) + '</span>' : ''}`;
+    tooltip.style.display = 'block';
+    tooltip.style.left = (mx + 15) + 'px';
+    tooltip.style.top = (e.clientY - br.top - 30) + 'px';
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    document.getElementById('magTooltip').style.display = 'none';
+  });
+}
+
+// Draw real/imaginary chart
+function drawRealImagChart() {
+  const canvas = document.getElementById('realImagChart');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+
+  const pad = { top: 20, right: 30, bottom: 40, left: 55 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+
+  const maxVal = 3.5;
+
+  function toX(t) { return pad.left + (t - tMin) / (tMax - tMin) * plotW; }
+  function toY(v) { return pad.top + plotH / 2 - (Math.max(-maxVal, Math.min(v, maxVal)) / maxVal) * (plotH / 2); }
+
+  // Grid
+  ctx.strokeStyle = '#141420';
+  ctx.lineWidth = 1;
+  for (let v = -3; v <= 3; v += 1) {
+    const y = toY(v);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+  }
+  for (let t = 0; t <= 50; t += 10) {
+    const x = toX(t);
+    ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + plotH); ctx.stroke();
+  }
+
+  // Zero line (prominent)
+  ctx.strokeStyle = '#2a2a34';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.left, toY(0)); ctx.lineTo(W - pad.right, toY(0)); ctx.stroke();
+
+  // Real part curve
+  ctx.strokeStyle = '#c4463a';
+  ctx.lineWidth = 1.3;
+  ctx.beginPath();
+  data.forEach((d, i) => {
+    const x = toX(d.t), y = toY(d.re);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Imaginary part curve
+  ctx.strokeStyle = '#4a90c4';
+  ctx.lineWidth = 1.3;
+  ctx.beginPath();
+  data.forEach((d, i) => {
+    const x = toX(d.t), y = toY(d.im);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Mark zeros
+  zeroTs.forEach(zt => {
+    const x = toX(zt), y = toY(0);
+
+    // Dot
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#d4a030';
+    ctx.fill();
+
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, 12);
+    grad.addColorStop(0, 'rgba(212, 160, 48, 0.3)');
+    grad.addColorStop(1, 'rgba(212, 160, 48, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // Axes labels
+  ctx.fillStyle = '#4a4840';
+  ctx.font = '12px "JetBrains Mono"';
+  ctx.textAlign = 'center';
+  for (let t = 0; t <= 50; t += 10) {
+    ctx.fillText(t.toString(), toX(t), H - pad.bottom + 20);
+  }
+  ctx.textAlign = 'right';
+  for (let v = -3; v <= 3; v += 1) {
+    ctx.fillText(v.toString(), pad.left - 10, toY(v) + 4);
+  }
+
+  ctx.save();
+  ctx.translate(14, pad.top + plotH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#5a5850';
+  ctx.font = '13px "Crimson Pro"';
+  ctx.fillText('Value', 0, 0);
+  ctx.restore();
+
+  ctx.fillStyle = '#5a5850';
+  ctx.font = '13px "Crimson Pro"';
+  ctx.textAlign = 'center';
+  ctx.fillText('t (imaginary part)', pad.left + plotW / 2, H - 4);
+}
+
+// Populate zero cards
+function populateZeros() {
+  const grid = document.getElementById('zerosGrid');
+  zeroTs.forEach((zt, i) => {
+    const card = document.createElement('div');
+    card.className = 'zero-card';
+    card.innerHTML = `
+      <div class="label">Zero #${i + 1}</div>
+      <div class="value"><span class="real">½</span> + <span class="imag">${zt.toFixed(6)}</span>i</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// Init
+drawMagnitudeChart();
+drawRealImagChart();
+populateZeros();
+
+window.addEventListener('resize', () => {
+  drawMagnitudeChart();
+  drawRealImagChart();
+});
+</script>
+</body>
+</html>
