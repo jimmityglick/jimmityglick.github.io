@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Run Toward the Sound</title>
+<style>
+:root {
+  --bg-0: #030711;
+  --bg-1: #08121d;
+  --bg-2: #10212f;
+  --ink: #e8fbff;
+  --muted: rgba(218, 244, 255, 0.62);
+  --line: rgba(184, 235, 255, 0.16);
+  --panel: rgba(8, 15, 24, 0.64);
+  --panel-strong: rgba(9, 19, 30, 0.82);
+  --cyan: #84f2ff;
+  --lime: #bcff70;
+  --gold: #ffd773;
+  --rose: #ff8a73;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; }
+body {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(85, 240, 255, 0.08), transparent 38%),
+    radial-gradient(circle at 80% 15%, rgba(255, 192, 107, 0.06), transparent 32%),
+    linear-gradient(135deg, var(--bg-0), var(--bg-1) 44%, var(--bg-2));
+  color: var(--ink);
+  font-family: "Gill Sans", "Franklin Gothic Medium", "Trebuchet MS", sans-serif;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 4px, 4px 100%;
+  mix-blend-mode: screen;
+}
+
+canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+#masthead {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(420px, calc(100vw - 40px));
+}
+
+#eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(232, 251, 255, 0.52);
+}
+
+#title {
+  font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: clamp(28px, 4vw, 58px);
+  letter-spacing: 0.08em;
+  line-height: 0.92;
+  text-transform: uppercase;
+  text-wrap: balance;
+  max-width: 8ch;
+}
+
+#status {
+  max-width: 34ch;
+  font-size: 12px;
+  line-height: 1.6;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+#meters {
+  display: grid;
+  gap: 10px;
+}
+
+.meter-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 52px;
+  gap: 12px;
+  align-items: center;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(232, 251, 255, 0.72);
+}
+
+.meter-label,
+.meter-value {
+  white-space: nowrap;
+}
+
+.meter-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+.meter-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent 70%);
+}
+
+.meter-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  transition: width 0.08s linear;
+}
+
+#level-fill { background: linear-gradient(90deg, var(--cyan), #7cf7cc); }
+#bass-fill { background: linear-gradient(90deg, #52dfff, var(--lime)); }
+#presence-fill { background: linear-gradient(90deg, var(--gold), var(--rose)); }
+
+#signal {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 14px 16px;
+  min-width: 180px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(11, 20, 32, 0.78), rgba(6, 13, 22, 0.56));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(18px);
+  text-align: right;
+}
+
+#signal-mode {
+  font-size: 11px;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: rgba(232, 251, 255, 0.88);
+}
+
+#signal-detail {
+  margin-top: 7px;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(232, 251, 255, 0.46);
+}
+
+#transport {
+  position: fixed;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(9, 19, 31, 0.9), rgba(7, 14, 23, 0.62));
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(22px);
+  pointer-events: auto;
+}
+
+.ctrl {
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 18px;
+  min-width: 92px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(232, 251, 255, 0.86);
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.ctrl:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.ctrl:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.ctrl.primary {
+  background: linear-gradient(135deg, var(--cyan), var(--lime));
+  color: #021118;
+  font-weight: 700;
+}
+
+#timeline {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+#timecode {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(232, 251, 255, 0.58);
+}
+
+#progress {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+#progress::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), transparent 65%);
+}
+
+#progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.18), var(--cyan), var(--gold));
+  box-shadow: 0 0 24px rgba(132, 242, 255, 0.35);
+}
+
+#hint {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(232, 251, 255, 0.34);
+}
+
+@media (max-width: 840px) {
+  #masthead {
+    width: calc(100vw - 40px);
+    gap: 12px;
+  }
+
+  #title {
+    max-width: none;
+    font-size: clamp(24px, 9vw, 42px);
+  }
+
+  #signal {
+    top: auto;
+    right: 20px;
+    bottom: 118px;
+    min-width: 0;
+    max-width: calc(100vw - 40px);
+  }
+
+  #transport {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .ctrl {
+    flex: 1 1 calc(33.333% - 8px);
+    min-width: 0;
+  }
+
+  #timeline {
+    width: 100%;
+    order: 2;
+  }
+
+  #timecode {
+    letter-spacing: 0.2em;
+  }
+}
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<div id="overlay">
+  <div id="masthead">
+    <div id="eyebrow">Reactive Audio Field</div>
+    <div id="title">Run Toward the Sound</div>
+    <div id="status">Loading the track from the repo root.</div>
+    <div id="meters">
+      <div class="meter-row">
+        <div class="meter-label">Level</div>
+        <div class="meter-track"><div class="meter-fill" id="level-fill"></div></div>
+        <div class="meter-value" id="level-value">0%</div>
+      </div>
+      <div class="meter-row">
+        <div class="meter-label">Bass</div>
+        <div class="meter-track"><div class="meter-fill" id="bass-fill"></div></div>
+        <div class="meter-value" id="bass-value">0%</div>
+      </div>
+      <div class="meter-row">
+        <div class="meter-label">Presence</div>
+        <div class="meter-track"><div class="meter-fill" id="presence-fill"></div></div>
+        <div class="meter-value" id="presence-value">0%</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="signal">
+    <div id="signal-mode">Armed</div>
+    <div id="signal-detail">repo source</div>
+  </div>
+
+  <div id="transport">
+    <button class="ctrl primary" id="playBtn">Play</button>
+    <button class="ctrl" id="pauseBtn">Pause</button>
+    <button class="ctrl" id="stopBtn">Stop</button>
+    <div id="timeline">
+      <div id="timecode">
+        <span id="currentTime">0:00</span>
+        <span id="durationTime">0:00</span>
+      </div>
+      <div id="progress"><div id="progress-fill"></div></div>
+      <div id="hint">Space toggles play and pause. Escape stops.</div>
+    </div>
+  </div>
+</div>
+
+<script src="./visualizer-analysis.js"></script>
+<script>
+const AUDIO_FILE = "./Run Toward The Sound.mp3";
+
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
+
+const statusEl = document.getElementById("status");
+const signalModeEl = document.getElementById("signal-mode");
+const signalDetailEl = document.getElementById("signal-detail");
+const currentTimeEl = document.getElementById("currentTime");
+const durationTimeEl = document.getElementById("durationTime");
+const progressFillEl = document.getElementById("progress-fill");
+
+const playBtn = document.getElementById("playBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const stopBtn = document.getElementById("stopBtn");
+
+const meterRefs = {
+  level: {
+    fill: document.getElementById("level-fill"),
+    value: document.getElementById("level-value"),
+  },
+  bass: {
+    fill: document.getElementById("bass-fill"),
+    value: document.getElementById("bass-value"),
+  },
+  presence: {
+    fill: document.getElementById("presence-fill"),
+    value: document.getElementById("presence-value"),
+  },
+};
+
+const analysis = window.VISUALIZER_ANALYSIS || null;
+const analysisFrameCount = analysis ? analysis.level.length : 0;
+const bandCount = analysis ? analysis.bandCount : 0;
+const spectrumProfile = new Float32Array(Math.max(1, bandCount));
+
+const audio = document.createElement("audio");
+audio.preload = "auto";
+audio.loop = false;
+audio.controls = false;
+audio.playsInline = true;
+audio.style.display = "none";
+audio.src = AUDIO_FILE;
+document.body.appendChild(audio);
+
+let W = 0;
+let H = 0;
+let CX = 0;
+let CY = 0;
+let DPR = 1;
+let fieldRadius = 0;
+let diagonal = 0;
+
+let lastFrame = performance.now();
+let lastShockwave = -1000;
+let audioAvailable = true;
+
+const metrics = {
+  level: 0,
+  bass: 0,
+  presence: 0,
+  air: 0,
+  centroid: 0.5,
+  transient: 0,
+};
+
+const shockwaves = [];
+const PARTICLE_COUNT = 320;
+const particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
+  orbit: 0.16 + Math.random() * 0.98,
+  angle: Math.random() * Math.PI * 2,
+  spin: 0.45 + Math.random() * 1.4,
+  size: 0.6 + Math.random() * 2.1,
+  opacity: 0.22 + Math.random() * 0.78,
+  seed: Math.random() * 1000,
+  hueOffset: i % 2 === 0 ? 0 : 28,
+}));
+
+function clamp(value, min = 0, max = 1) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = Math.floor(W * DPR);
+  canvas.height = Math.floor(H * DPR);
+  canvas.style.width = `${W}px`;
+  canvas.style.height = `${H}px`;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  CX = W * 0.5;
+  CY = H * 0.5;
+  fieldRadius = Math.min(W, H) * 0.31;
+  diagonal = Math.hypot(W, H);
+}
+
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const minutes = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${minutes}:${String(secs).padStart(2, "0")}`;
+}
+
+function setStatus(message) {
+  statusEl.textContent = message;
+}
+
+function setSignal(mode, detail) {
+  signalModeEl.textContent = mode;
+  signalDetailEl.textContent = detail;
+}
+
+function syncControls() {
+  const hasTime = audio.currentTime > 0.01;
+  const active = !audio.paused && !audio.ended;
+  playBtn.disabled = !audioAvailable;
+  pauseBtn.disabled = !audioAvailable || !active;
+  stopBtn.disabled = !audioAvailable || (!hasTime && !active);
+}
+
+function updateTransport() {
+  const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+  const current = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+  currentTimeEl.textContent = formatTime(current);
+  durationTimeEl.textContent = formatTime(duration);
+  progressFillEl.style.width = `${duration ? (current / duration) * 100 : 0}%`;
+}
+
+function setMeter(ref, value) {
+  const pct = Math.round(clamp(value) * 100);
+  ref.fill.style.width = `${pct}%`;
+  ref.value.textContent = `${pct}%`;
+}
+
+function resetMetrics() {
+  metrics.level = 0;
+  metrics.bass = 0;
+  metrics.presence = 0;
+  metrics.air = 0;
+  metrics.centroid = 0.5;
+  metrics.transient = 0;
+}
+
+function resetShockwaves() {
+  shockwaves.length = 0;
+}
+
+function sampleSeries(series, frameIndex, frameMix) {
+  if (!analysis || !analysisFrameCount) return 0;
+  const maxIndex = analysisFrameCount - 1;
+  const idx = Math.max(0, Math.min(maxIndex, frameIndex));
+  const next = Math.max(0, Math.min(maxIndex, idx + 1));
+  return lerp(series[idx] || 0, series[next] || 0, frameMix) / 255;
+}
+
+function spectrumAt(position) {
+  if (!bandCount) return 0;
+  const clamped = clamp(position);
+  const scaled = clamped * (bandCount - 1);
+  const idx = Math.floor(scaled);
+  const next = Math.min(bandCount - 1, idx + 1);
+  const mix = scaled - idx;
+  return lerp(spectrumProfile[idx] || 0, spectrumProfile[next] || 0, mix);
+}
+
+function sampleAudioFrame(currentTime) {
+  if (!analysis || !analysisFrameCount) {
+    decayMetrics();
+    return;
+  }
+
+  const frame = clamp(currentTime, 0, analysis.duration || currentTime) * analysis.fps;
+  const frameIndex = Math.floor(frame);
+  const frameMix = frame - frameIndex;
+
+  const levelRaw = sampleSeries(analysis.level, frameIndex, frameMix);
+  const bassRaw = sampleSeries(analysis.bass, frameIndex, frameMix);
+  const presenceRaw = sampleSeries(analysis.presence, frameIndex, frameMix);
+  const airRaw = sampleSeries(analysis.air, frameIndex, frameMix);
+  const centroidRaw = sampleSeries(analysis.centroid, frameIndex, frameMix);
+  const transientRaw = Math.max(0, levelRaw - metrics.level * 0.84);
+
+  if (bandCount) {
+    const maxFrame = analysisFrameCount - 1;
+    const idx = Math.max(0, Math.min(maxFrame, frameIndex));
+    const next = Math.max(0, Math.min(maxFrame, idx + 1));
+    const base = idx * bandCount;
+    const nextBase = next * bandCount;
+    for (let i = 0; i < bandCount; i++) {
+      spectrumProfile[i] = lerp(
+        (analysis.spectrum[base + i] || 0) / 255,
+        (analysis.spectrum[nextBase + i] || 0) / 255,
+        frameMix
+      );
+    }
+  }
+
+  metrics.level = lerp(metrics.level, levelRaw, 0.34);
+  metrics.bass = lerp(metrics.bass, bassRaw, 0.3);
+  metrics.presence = lerp(metrics.presence, presenceRaw, 0.28);
+  metrics.air = lerp(metrics.air, airRaw, 0.2);
+  metrics.centroid = lerp(metrics.centroid, centroidRaw, 0.16);
+  metrics.transient = lerp(
+    metrics.transient,
+    transientRaw,
+    transientRaw > metrics.transient ? 0.52 : 0.14
+  );
+}
+
+function decayMetrics() {
+  metrics.level = lerp(metrics.level, 0, 0.08);
+  metrics.bass = lerp(metrics.bass, 0, 0.08);
+  metrics.presence = lerp(metrics.presence, 0, 0.08);
+  metrics.air = lerp(metrics.air, 0, 0.08);
+  metrics.transient = lerp(metrics.transient, 0, 0.12);
+  metrics.centroid = lerp(metrics.centroid, 0.5, 0.08);
+}
+
+function updateMeters() {
+  setMeter(meterRefs.level, metrics.level);
+  setMeter(meterRefs.bass, metrics.bass);
+  setMeter(meterRefs.presence, metrics.presence);
+}
+
+function maybeEmitShockwave(timeMs) {
+  const shouldPulse =
+    metrics.transient > 0.085 ||
+    (metrics.bass > 0.62 && timeMs - lastShockwave > 140);
+
+  if (!shouldPulse || timeMs - lastShockwave < 90) return;
+
+  shockwaves.push({
+    radius: fieldRadius * (0.18 + Math.random() * 0.08),
+    speed: 180 + metrics.level * 280 + metrics.presence * 90,
+    alpha: 0.22 + metrics.transient * 1.4 + metrics.bass * 0.2,
+    width: 1.2 + metrics.presence * 2.2,
+    hue: 182 + metrics.centroid * 120 + Math.random() * 18,
+  });
+  if (shockwaves.length > 10) shockwaves.shift();
+  lastShockwave = timeMs;
+}
+
+function updateMotion(dt, timeMs) {
+  maybeEmitShockwave(timeMs);
+
+  for (let i = shockwaves.length - 1; i >= 0; i--) {
+    const ring = shockwaves[i];
+    ring.radius += ring.speed * dt;
+    ring.alpha *= 0.968;
+    if (ring.radius > fieldRadius * 2.2 || ring.alpha < 0.015) {
+      shockwaves.splice(i, 1);
+    }
+  }
+
+  for (const particle of particles) {
+    const spin = (0.22 + particle.spin * 0.34) * (0.35 + metrics.level * 2.7);
+    particle.angle += spin * dt;
+    particle.orbit +=
+      Math.sin(timeMs * 0.0008 + particle.seed) * 0.0024 +
+      (metrics.transient - 0.03) * 0.014;
+    particle.orbit = clamp(particle.orbit, 0.14, 1.14);
+  }
+}
+
+function drawBackdrop(timeMs) {
+  const hueShift = metrics.centroid * 90;
+  const base = ctx.createLinearGradient(0, 0, W, H);
+  base.addColorStop(0, `hsl(${205 + hueShift * 0.15}, 48%, 5%)`);
+  base.addColorStop(0.45, `hsl(${192 + hueShift * 0.28}, 54%, ${6 + metrics.level * 8}%)`);
+  base.addColorStop(1, `hsl(${220 + hueShift * 0.12}, 56%, 4%)`);
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, W, H);
+
+  const bloom = ctx.createRadialGradient(
+    CX,
+    CY,
+    fieldRadius * 0.15,
+    CX,
+    CY,
+    fieldRadius * (1.6 + metrics.level * 0.8)
+  );
+  bloom.addColorStop(0, `hsla(${182 + hueShift}, 95%, 74%, ${0.16 + metrics.level * 0.24})`);
+  bloom.addColorStop(0.42, `hsla(${150 + hueShift * 0.45}, 88%, 64%, ${0.08 + metrics.presence * 0.16})`);
+  bloom.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = bloom;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.strokeStyle = `rgba(214, 244, 255, ${0.018 + metrics.level * 0.028})`;
+  ctx.lineWidth = 1;
+  const spacing = Math.max(38, Math.min(W, H) / 12);
+  const drift = (timeMs * 0.015) % spacing;
+  for (let x = -diagonal; x < diagonal * 1.5; x += spacing) {
+    ctx.beginPath();
+    ctx.moveTo(x + drift, H + 40);
+    ctx.lineTo(x + diagonal * 0.62 + drift, -40);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawSpokes(timeMs) {
+  if (!bandCount) return;
+  const spokes = 144;
+  const rotation = timeMs * 0.00012 * (0.35 + metrics.level * 0.8);
+  const innerBase = fieldRadius * (0.46 + metrics.bass * 0.1);
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < spokes; i++) {
+    const t = i / spokes;
+    const curve = Math.pow((t * 3.5) % 1, 2.1);
+    const energy = Math.pow(spectrumAt(curve), 1.18);
+    if (energy < 0.015) continue;
+
+    const angle = t * Math.PI * 2 + rotation;
+    const inner = innerBase + Math.sin(angle * 4 - timeMs * 0.0014) * metrics.transient * 18;
+    const outer = inner + energy * fieldRadius * (0.42 + metrics.level * 0.55);
+
+    ctx.beginPath();
+    ctx.moveTo(CX + Math.cos(angle) * inner, CY + Math.sin(angle) * inner);
+    ctx.lineTo(CX + Math.cos(angle) * outer, CY + Math.sin(angle) * outer);
+    ctx.strokeStyle = `hsla(${180 + t * 118 + metrics.centroid * 65}, 96%, ${64 + energy * 18}%, ${0.03 + energy * 0.48})`;
+    ctx.lineWidth = 0.8 + energy * 2.3;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawWaveRings(timeMs) {
+  if (!bandCount) return;
+
+  const points = 220;
+  const rings = [
+    { base: 0.54, amp: 26 + metrics.level * 84, alpha: 0.34, hue: 188, width: 1.5 },
+    { base: 0.68, amp: 18 + metrics.presence * 62, alpha: 0.18, hue: 134, width: 1.1 },
+    { base: 0.82, amp: 12 + metrics.air * 54, alpha: 0.14, hue: 34, width: 0.95 },
+  ];
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+
+  for (let r = 0; r < rings.length; r++) {
+    const ring = rings[r];
+    ctx.beginPath();
+    for (let i = 0; i <= points; i++) {
+      const pct = i / points;
+      const harmonic = spectrumAt((pct * (2.2 + r * 0.65) + metrics.centroid * 0.35) % 1);
+      const wave = (harmonic - 0.5) * 2;
+      const theta =
+        pct * Math.PI * 2 +
+        timeMs * 0.00015 * (r % 2 === 0 ? 1 : -1) * (0.35 + metrics.centroid);
+      const wobble =
+        Math.sin(theta * (5 + r) - timeMs * 0.0011 + r * 0.7) * (4 + metrics.transient * 26);
+      const radius =
+        fieldRadius * ring.base +
+        wave * ring.amp +
+        harmonic * fieldRadius * (0.08 + metrics.level * 0.08) +
+        wobble;
+      const x = CX + Math.cos(theta) * radius;
+      const y = CY + Math.sin(theta) * radius;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+
+    ctx.closePath();
+    ctx.strokeStyle = `hsla(${ring.hue + metrics.centroid * 70}, 94%, 72%, ${ring.alpha + metrics.level * 0.12})`;
+    ctx.lineWidth = ring.width + metrics.transient * 0.7;
+    ctx.stroke();
+
+    if (r === 0) {
+      const fill = ctx.createRadialGradient(CX, CY, fieldRadius * 0.14, CX, CY, fieldRadius * 0.92);
+      fill.addColorStop(0, `hsla(${188 + metrics.centroid * 55}, 98%, 74%, ${0.12 + metrics.level * 0.1})`);
+      fill.addColorStop(0.7, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawCore() {
+  const core = ctx.createRadialGradient(CX, CY, 0, CX, CY, fieldRadius * 0.34);
+  core.addColorStop(0, `rgba(255, 255, 255, ${0.22 + metrics.level * 0.35})`);
+  core.addColorStop(0.3, `hsla(${182 + metrics.centroid * 80}, 100%, 78%, ${0.16 + metrics.presence * 0.18})`);
+  core.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = core;
+  ctx.fillRect(CX - fieldRadius, CY - fieldRadius, fieldRadius * 2, fieldRadius * 2);
+
+  ctx.beginPath();
+  ctx.arc(CX, CY, fieldRadius * (0.07 + metrics.level * 0.035), 0, Math.PI * 2);
+  ctx.fillStyle = `rgba(255, 255, 255, ${0.38 + metrics.level * 0.32})`;
+  ctx.fill();
+}
+
+function drawParticles(timeMs) {
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  for (const particle of particles) {
+    const wobble = Math.sin(timeMs * 0.001 + particle.seed) * 0.12;
+    const orbitRadius = fieldRadius * particle.orbit * (0.86 + metrics.centroid * 0.38);
+    const angle = particle.angle + wobble;
+    const x = CX + Math.cos(angle) * orbitRadius;
+    const y = CY + Math.sin(angle * 1.12 + particle.seed * 0.004) * orbitRadius * 0.72;
+    const size = particle.size * (0.5 + metrics.level * 1.5);
+    const alpha = 0.03 + particle.opacity * (0.08 + metrics.presence * 0.42);
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${178 + particle.hueOffset + metrics.centroid * 88}, 100%, ${66 + metrics.air * 12}%, ${alpha})`;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawShockwaves() {
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  for (const ring of shockwaves) {
+    ctx.beginPath();
+    ctx.arc(CX, CY, ring.radius, 0, Math.PI * 2);
+    ctx.strokeStyle = `hsla(${ring.hue}, 98%, 76%, ${ring.alpha})`;
+    ctx.lineWidth = ring.width;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawVignette() {
+  const vignette = ctx.createRadialGradient(CX, CY, fieldRadius * 0.45, CX, CY, diagonal * 0.6);
+  vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
+  vignette.addColorStop(1, "rgba(0, 0, 0, 0.58)");
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, W, H);
+}
+
+async function playAudio() {
+  if (!audioAvailable) return;
+
+  try {
+    await audio.play();
+    setStatus("Live audio signal active.");
+    setSignal("Live", "repo source");
+  } catch (error) {
+    setStatus("Playback could not start.");
+    setSignal("Error", "playback blocked");
+    console.error(error);
+  } finally {
+    syncControls();
+  }
+}
+
+function pauseAudio() {
+  if (!audioAvailable) return;
+  audio.pause();
+  setStatus("Paused.");
+  setSignal("Paused", "repo source");
+  syncControls();
+}
+
+function stopAudio() {
+  if (!audioAvailable) return;
+  audio.pause();
+  audio.currentTime = 0;
+  resetMetrics();
+  resetShockwaves();
+  updateMeters();
+  updateTransport();
+  setStatus("Stopped.");
+  setSignal("Stopped", "repo source");
+  syncControls();
+}
+
+function handleKeydown(event) {
+  if (event.repeat) return;
+
+  if (event.code === "Space") {
+    event.preventDefault();
+    if (audio.paused || audio.ended) playAudio();
+    else pauseAudio();
+  } else if (event.code === "Escape") {
+    stopAudio();
+  }
+}
+
+function render(timeMs) {
+  const dt = Math.min((timeMs - lastFrame) / 1000, 0.05);
+  lastFrame = timeMs;
+
+  const active = !audio.paused && !audio.ended;
+  if (active) sampleAudioFrame(audio.currentTime);
+  else decayMetrics();
+
+  updateTransport();
+  updateMeters();
+  updateMotion(dt, timeMs);
+
+  drawBackdrop(timeMs);
+  drawShockwaves();
+  drawSpokes(timeMs);
+  drawWaveRings(timeMs);
+  drawParticles(timeMs);
+  drawCore();
+  drawVignette();
+
+  requestAnimationFrame(render);
+}
+
+window.addEventListener("resize", resize);
+document.addEventListener("keydown", handleKeydown);
+playBtn.addEventListener("click", playAudio);
+pauseBtn.addEventListener("click", pauseAudio);
+stopBtn.addEventListener("click", stopAudio);
+
+audio.addEventListener("loadedmetadata", () => {
+  updateTransport();
+  setStatus("Ready. Press play.");
+  setSignal("Armed", "repo source");
+  syncControls();
+});
+
+audio.addEventListener("canplay", () => {
+  if (audio.paused && audio.currentTime === 0) {
+    setStatus("Ready. Press play.");
+    setSignal("Armed", "repo source");
+  }
+  syncControls();
+});
+
+audio.addEventListener("waiting", () => {
+  setStatus("Buffering audio.");
+  setSignal("Buffering", "repo source");
+  syncControls();
+});
+
+audio.addEventListener("playing", () => {
+  setStatus("Live audio signal active.");
+  setSignal("Live", "repo source");
+  syncControls();
+});
+
+audio.addEventListener("pause", () => {
+  if (!audio.ended && audio.currentTime > 0) {
+    setStatus("Paused.");
+    setSignal("Paused", "repo source");
+  }
+  syncControls();
+});
+
+audio.addEventListener("ended", () => {
+  resetShockwaves();
+  setStatus("Playback complete.");
+  setSignal("Done", "repo source");
+  syncControls();
+});
+
+audio.addEventListener("error", () => {
+  audioAvailable = false;
+  setStatus("Repo audio could not be loaded.");
+  setSignal("Error", "missing source");
+  syncControls();
+});
+
+resize();
+resetMetrics();
+updateMeters();
+updateTransport();
+syncControls();
+audio.load();
+requestAnimationFrame(render);
+</script>
+</body>
+</html>
